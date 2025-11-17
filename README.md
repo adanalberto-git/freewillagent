@@ -184,4 +184,4 @@ This is an educational demonstration of the DeLancey & Gomez (2025) model.
 
 ## Author
 
-Created with Claude Code (Anthropic)
+Created by Adan Gomez
