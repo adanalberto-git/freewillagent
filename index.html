@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Will Agent Designer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- LEFT PANEL: TOOLBOX & INSPECTOR (35%) -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <h1>Free Will Agent Designer</h1>
+                <p class="subtitle">Design agents with customizable purpose hierarchies</p>
+            </div>
+
+            <!-- CREATE AGENT SECTION -->
+            <section class="panel-section">
+                <h2>Create Agent</h2>
+                <button id="createAgentBtn" class="btn btn-primary">
+                    <span class="btn-icon">+</span> Create Agent
+                </button>
+                <p class="help-text" id="placementModeText" style="display: none;">
+                    Click on the canvas to place agent
+                </p>
+            </section>
+
+            <!-- AGENT INSPECTOR SECTION -->
+            <section class="panel-section" id="agentInspector" style="display: none;">
+                <h2>Agent Inspector</h2>
+
+                <div class="inspector-header">
+                    <h3 id="agentIdDisplay">Agent #1</h3>
+                    <button id="deselectAgentBtn" class="btn-small">×</button>
+                </div>
+
+                <div class="inspector-info">
+                    <div class="info-row">
+                        <span class="info-label">Position:</span>
+                        <span id="agentPosition">(0, 0)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Energy:</span>
+                        <span id="agentEnergy">100</span>/100
+                    </div>
+                    <div class="energy-bar-container">
+                        <div id="agentEnergyBar" class="energy-bar" style="width: 100%"></div>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Age:</span>
+                        <span id="agentAge">0</span> turns
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Dominant Purpose:</span>
+                        <span id="agentDominantPurpose" class="dominant-badge">SURVIVE</span>
+                    </div>
+                </div>
+
+                <div class="inspector-controls">
+                    <h4>Manual Controls</h4>
+                    <div class="control-group">
+                        <label for="energySlider">Energy: <span id="energySliderValue">100</span></label>
+                        <input type="range" id="energySlider" min="0" max="100" value="100" class="slider">
+                    </div>
+                    <div class="button-row">
+                        <button id="feedAgentBtn" class="btn btn-small">Feed Agent (+20)</button>
+                        <button id="deleteAgentBtn" class="btn btn-small btn-danger">Delete Agent</button>
+                    </div>
+                </div>
+
+                <div class="salience-display">
+                    <h4>Current Salience Values</h4>
+                    <div id="salienceList" class="salience-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h4>Quick Actions</h4>
+                    <button id="editWillGraphBtn" class="btn btn-secondary">Edit Will Graph</button>
+                    <button id="cloneAgentBtn" class="btn btn-secondary">Clone Agent</button>
+                    <button id="resetSaliencesBtn" class="btn btn-secondary">Reset Saliences</button>
+                </div>
+            </section>
+
+            <!-- GLOBAL CONTROLS SECTION -->
+            <section class="panel-section">
+                <h2>Global Controls</h2>
+
+                <div class="button-row">
+                    <button id="playPauseBtn" class="btn btn-primary">
+                        <span id="playPauseIcon">▶</span> Play
+                    </button>
+                    <button id="stepBtn" class="btn btn-secondary">Step</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="speedSlider">Speed: <span id="speedValue">10</span> turns/sec</label>
+                    <input type="range" id="speedSlider" min="1" max="60" value="10" class="slider">
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Turn:</span>
+                    <span id="turnCounter">0</span>
+                </div>
+
+                <div class="button-row">
+                    <button id="clearAllBtn" class="btn btn-danger">Clear All Agents</button>
+                    <button id="resetSimBtn" class="btn btn-secondary">Reset Simulation</button>
+                </div>
+            </section>
+
+            <!-- STATISTICS SECTION -->
+            <section class="panel-section">
+                <h2>Statistics</h2>
+                <div class="info-row">
+                    <span class="info-label">Total Agents:</span>
+                    <span id="totalAgents">0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Average Energy:</span>
+                    <span id="avgEnergy">0</span>
+                </div>
+                <div id="purposeDistribution">
+                    <h4>Purpose Distribution</h4>
+                    <div id="purposeDistList"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT PANEL: CANVAS (65%) -->
+        <div class="right-panel">
+            <canvas id="agentCanvas"></canvas>
+            <div id="welcomeMessage" class="welcome-message">
+                <h2>Welcome to Free Will Agent Designer</h2>
+                <p>Click <strong>'Create Agent'</strong> to place your first agent</p>
+                <p>Double-click any agent to design its purpose network</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WILL GRAPH EDITOR MODAL -->
+    <div id="willGraphModal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Agent #1 - Purpose Network Editor</h2>
+                <div class="modal-header-buttons">
+                    <button id="saveModalBtn" class="btn btn-primary">Save Changes</button>
+                    <button id="cancelModalBtn" class="btn btn-secondary">Cancel</button>
+                    <button id="closeModalBtn" class="btn-close">×</button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <!-- LEFT SIDE: GRAPH VISUALIZATION -->
+                <div class="modal-left">
+                    <h3>Purpose Network</h3>
+                    <canvas id="graphCanvas"></canvas>
+                </div>
+
+                <!-- RIGHT SIDE: EDITING PANEL -->
+                <div class="modal-right">
+                    <div class="editor-section">
+                        <h3>Create New Purpose</h3>
+                        <form id="createPurposeForm">
+                            <div class="form-group">
+                                <label for="purposeName">Purpose Name:</label>
+                                <input type="text" id="purposeName" placeholder="e.g., Get Food, Hunt Prey" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Purpose Type:</label>
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" name="purposeType" value="terminal">
+                                        Terminal Purpose (intrinsic goal)
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="purposeType" value="instrumental" checked>
+                                        Instrumental Purpose (means to an end)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="initialSalience">Initial Salience: <span id="salienceValue">0.30</span></label>
+                                <input type="range" id="initialSalience" min="0" max="1" step="0.01" value="0.3" class="slider">
+                                <p class="help-text">This is the starting salience. It will update dynamically during simulation.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="purposeColor">Purpose Color:</label>
+                                <input type="color" id="purposeColor" value="#ffd700">
+                            </div>
+
+                            <div class="form-group" id="connectionsGroup">
+                                <label>Connects To:</label>
+                                <div id="connectionsList">
+                                    <!-- Dynamically populated -->
+                                </div>
+                                <button type="button" id="addConnectionBtn" class="btn btn-small">+ Add Connection</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="actionType">Action Effect:</label>
+                                <select id="actionType">
+                                    <option value="none">Do nothing (default)</option>
+                                    <option value="increase_energy">Increase energy</option>
+                                    <option value="decrease_energy">Decrease energy</option>
+                                    <option value="move_random">Move randomly</option>
+                                    <option value="reproduce">Create offspring</option>
+                                </select>
+                                <input type="number" id="actionValue" placeholder="Amount" style="display: none;" min="0" max="100" value="5">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Create Purpose</button>
+                        </form>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3>Edit Existing Purpose</h3>
+                        <div class="form-group">
+                            <label for="editPurposeSelect">Select Purpose to Edit:</label>
+                            <select id="editPurposeSelect">
+                                <option value="">-- Select a purpose --</option>
+                            </select>
+                        </div>
+
+                        <div id="editPurposePanel" style="display: none;">
+                            <div class="form-group">
+                                <label for="editPurposeName">Name:</label>
+                                <input type="text" id="editPurposeName">
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Type:</span>
+                                <span id="editPurposeType">Instrumental</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Current Salience:</span>
+                                <span id="editPurposeSalience">0.30</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPurposeColor">Color:</label>
+                                <input type="color" id="editPurposeColor">
+                            </div>
+
+                            <div id="editConnectionsGroup" style="display: none;">
+                                <h4>Connections</h4>
+                                <div id="editConnectionsList">
+                                    <!-- Dynamically populated -->
+                                </div>
+                                <button type="button" id="addEditConnectionBtn" class="btn btn-small">+ Add Connection</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editActionType">Action Effect:</label>
+                                <select id="editActionType">
+                                    <option value="none">Do nothing</option>
+                                    <option value="increase_energy">Increase energy</option>
+                                    <option value="decrease_energy">Decrease energy</option>
+                                    <option value="move_random">Move randomly</option>
+                                    <option value="reproduce">Create offspring</option>
+                                </select>
+                                <input type="number" id="editActionValue" placeholder="Amount" style="display: none;" min="0" max="100">
+                            </div>
+
+                            <div class="button-row">
+                                <button id="updatePurposeBtn" class="btn btn-primary">Update Purpose</button>
+                                <button id="deletePurposeBtn" class="btn btn-danger">Delete Purpose</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3>Salience Display</h3>
+                        <div id="modalSalienceTable">
+                            <table class="salience-table">
+                                <thead>
+                                    <tr>
+                                        <th>Purpose Name</th>
+                                        <th>Type</th>
+                                        <th>Salience</th>
+                                        <th>Dominant?</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalSalienceBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="agent.js"></script>
+    <script src="purpose-graph.js"></script>
+    <script src="graph-visualizer.js"></script>
+    <script src="canvas-renderer.js"></script>
+    <script src="will-graph-modal.js"></script>
+    <script src="toolbox.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
